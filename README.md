@@ -2,10 +2,11 @@
 
 AI Bias Risk Assessment: Facial Recognition Using NIST AI RMF
 
-**Author:** Jake Kantor | [LinkedIn](https://linkedin.com/in/jakekantor) | M.S. Cybersecurity, AI Security — Old Dominion University  
-**Framework:** NIST AI Risk Management Framework (AI RMF 1.0)  
-**Dataset:** UTKFace (23,708 facial images)  
-**Prediction Task:** Gender Classification (Binary)
+**Authors:** Jake Kantor, Greg Arcand, Marcus Lee
+**Institution:** Old Dominion University — M.S. Cybersecurity, AI Security  
+**Course:** CYSE 640: Trustworthy and Responsible AI  
+**Framework:** NIST AI RMF 1.0  
+**Dataset:** UTKFace (23,708 facial images)
 
 ---
 
