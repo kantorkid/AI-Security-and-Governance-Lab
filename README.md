@@ -77,15 +77,15 @@ This assessment maps to the four core NIST AI RMF functions:
 ### Robustness and Adversarial Vulnerability
 | Test Condition | Accuracy |
 |----------------|----------|
-| Clean images (baseline) | 70.0% |
+| Clean images (baseline) | 65.5% |
 | Gaussian noise perturbation | 46.5% |
 | FGSM adversarial attack (ε=0.1) | 14.5% |
 | Adversarially trained model — clean images | 57.5% |
 | Adversarially trained model — adversarial images | 100.0% |
 
-**Finding:** The baseline model is highly vulnerable to adversarial attack. A targeted FGSM perturbation with epsilon=0.1 — invisible to the human eye — reduced accuracy from 70% to 14.5%. This represents an extreme security risk in any deployment context where adversarial manipulation is possible.
+**Finding:** The baseline model is highly vulnerable to adversarial attack. A targeted FGSM perturbation with epsilon=0.1 — invisible to the human eye — reduced accuracy from 65.5% to 14.5%. This represents an extreme security risk in any deployment context where adversarial manipulation is possible.
 
-Adversarial training successfully defended against the specific FGSM attack (100% accuracy on adversarial examples) but introduced a clean accuracy tradeoff (57.5% vs 70.0%), illustrating the fundamental robustness-utility tension governance frameworks must account for.
+Adversarial training successfully defended against the specific FGSM attack (100% accuracy on adversarial examples) but introduced a clean accuracy tradeoff (57.5% vs 65.5%), illustrating the fundamental robustness-utility tension governance frameworks must account for.
 
 ---
 
@@ -115,7 +115,7 @@ Both strategies improved fairness metrics with measurable reductions in TPR disp
 **Federated Learning (3 simulated clients, naive weight averaging)**
 | Model | Accuracy |
 |-------|----------|
-| Baseline CNN | 70.0% |
+| Baseline CNN | 65.5% |
 | DP Logistic Regression (ε=1.0) | 47.0% |
 | Federated Learning | 77.0% |
 
