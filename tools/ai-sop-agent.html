@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI SOP Agent — Audit-Ready Procedure Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: #2a2a3a;
+    --accent: #00d4aa;
+    --accent2: #7c6af5;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --text: #e8e8f0;
+    --text2: #9090a8;
+    --text3: #5a5a72;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,170,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,170,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    margin-bottom: 48px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 32px;
+  }
+
+  .header-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .header h1 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+
+  .header h1 span {
+    color: var(--accent);
+  }
+
+  .header p {
+    color: var(--text2);
+    font-size: 14px;
+    max-width: 560px;
+  }
+
+  .badges {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    letter-spacing: 0.05em;
+  }
+
+  .badge-green { background: rgba(0,212,170,0.1); color: var(--accent); border: 1px solid rgba(0,212,170,0.2); }
+  .badge-purple { background: rgba(124,106,245,0.1); color: var(--accent2); border: 1px solid rgba(124,106,245,0.2); }
+  .badge-amber { background: rgba(245,158,11,0.1); color: var(--warn); border: 1px solid rgba(245,158,11,0.2); }
+
+  /* Form */
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+
+  .form-section {
+    margin-bottom: 32px;
+  }
+
+  .form-section:last-child { margin-bottom: 0; }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .field-grid.single { grid-template-columns: 1fr; }
+  .field-grid.triple { grid-template-columns: 1fr 1fr 1fr; }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field.span2 { grid-column: span 2; }
+
+  label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text2);
+    letter-spacing: 0.02em;
+  }
+
+  label .req { color: var(--accent); margin-left: 2px; }
+
+  input, select, textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    padding: 10px 12px;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239090a8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+    cursor: pointer;
+  }
+
+  select option { background: var(--surface2); }
+
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* Checkboxes */
+  .checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+  }
+
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    font-size: 13px;
+  }
+
+  .checkbox-item:hover { border-color: var(--accent); }
+
+  .checkbox-item input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* Generate button */
+  .generate-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    margin-top: 24px;
+  }
+
+  .generate-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .generate-btn:active { transform: translateY(0); }
+  .generate-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* Status */
+  .status {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    margin-top: 16px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text2);
+  }
+
+  .status.active { display: flex; }
+
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Output */
+  .output-section {
+    display: none;
+    margin-top: 32px;
+  }
+
+  .output-section.active { display: block; }
+
+  .output-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .output-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .output-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .action-btn {
+    padding: 6px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text2);
+    font-family: var(--mono);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.05em;
+  }
+
+  .action-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .output-content {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 32px;
+    font-size: 14px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    font-family: var(--sans);
+    max-height: 700px;
+    overflow-y: auto;
+  }
+
+  .output-content::-webkit-scrollbar { width: 6px; }
+  .output-content::-webkit-scrollbar-track { background: var(--surface2); }
+  .output-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* Streaming cursor */
+  .cursor {
+    display: inline-block;
+    width: 2px;
+    height: 14px;
+    background: var(--accent);
+    margin-left: 2px;
+    animation: blink 1s step-end infinite;
+    vertical-align: middle;
+  }
+
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* Error */
+  .error {
+    display: none;
+    padding: 14px 16px;
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: 3px;
+    color: var(--danger);
+    font-size: 13px;
+    margin-top: 16px;
+  }
+
+  .error.active { display: block; }
+
+  /* Footer */
+  .footer {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: gap;
+  }
+
+  .footer-left {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  .footer-right {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  @media (max-width: 600px) {
+    .field-grid { grid-template-columns: 1fr; }
+    .field.span2 { grid-column: span 1; }
+    .field-grid.triple { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-tag">// AI GRC TOOLKIT v1.0</div>
+    <h1>AI <span>SOP</span> Agent</h1>
+    <p>Generate audit-ready Standard Operating Procedures for AI systems aligned to NIST AI RMF, EU AI Act, and ISO/IEC 42001.</p>
+    <div class="badges">
+      <span class="badge badge-green">NIST AI RMF 1.0</span>
+      <span class="badge badge-green">EU AI Act 2024</span>
+      <span class="badge badge-purple">ISO/IEC 42001</span>
+      <span class="badge badge-amber">NYC Local Law 144</span>
+    </div>
+  </div>
+
+  <div class="form-card">
+
+    <div class="form-section">
+      <div class="section-label">01 — System Identity</div>
+      <div class="field-grid">
+        <div class="field">
+          <label>System Name <span class="req">*</span></label>
+          <input type="text" id="systemName" placeholder="e.g. Candidate Screening Model v2.1">
+        </div>
+        <div class="field">
+          <label>System Owner / Organization <span class="req">*</span></label>
+          <input type="text" id="systemOwner" placeholder="e.g. Acme Corp — HR Technology">
+        </div>
+        <div class="field">
+          <label>Primary Use Case <span class="req">*</span></label>
+          <input type="text" id="useCase" placeholder="e.g. Resume screening for engineering roles">
+        </div>
+        <div class="field">
+          <label>AI System Type</label>
+          <select id="systemType">
+            <option value="">Select type...</option>
+            <option>Classification model</option>
+            <option>Large language model (LLM)</option>
+            <option>Recommendation system</option>
+            <option>Computer vision / facial recognition</option>
+            <option>Natural language processing</option>
+            <option>Generative AI</option>
+            <option>Agentic AI system</option>
+            <option>Fraud detection model</option>
+            <option>Risk scoring model</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field span2">
+          <label>Brief System Description</label>
+          <textarea id="systemDesc" placeholder="Describe what the system does, what data it uses, and how outputs are used in decision-making..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="section-label">02 — Risk Classification</div>
+      <div class="field-grid triple">
+        <div class="field">
+          <label>EU AI Act Risk Level</label>
+          <select id="riskLevel">
+            <option value="">Select...</option>
+            <option>Unacceptable Risk (Prohibited)</option>
+            <option>High Risk</option>
+            <option>Limited Risk</option>
+            <option>Minimal Risk</option>
+            <option>Unknown — requires classification</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Deployment Context</label>
+          <select id="deployContext">
+            <option value="">Select...</option>
+            <option>Employment / HR</option>
+            <option>Financial services / Credit</option>
+            <option>Healthcare</option>
+            <option>Law enforcement</option>
+            <option>Education</option>
+            <option>Critical infrastructure</option>
+            <option>Customer service</option>
+            <option>Internal operations</option>
+            <option>Research</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Geographic Scope</label>
+          <select id="geoScope">
+            <option value="">Select...</option>
+            <option>United States only</option>
+            <option>European Union / EEA</option>
+            <option>United States + EU</option>
+            <option>Global</option>
+            <option>New York City (LL144 applies)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="section-label">03 — SOP Type</div>
+      <div class="checkbox-grid">
+        <label class="checkbox-item">
+          <input type="checkbox" value="pre-deployment" checked> Pre-Deployment Assessment
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="bias-audit"> Bias Audit Procedure
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="human-oversight"> Human Oversight Protocol
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="incident-response"> Incident Response Procedure
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="monitoring"> Ongoing Monitoring SOP
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="vendor-review"> Third-Party Vendor Review
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="data-governance"> Data Governance Procedure
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="decommission"> Decommission / Retirement SOP
+        </label>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="section-label">04 — Compliance Frameworks</div>
+      <div class="checkbox-grid">
+        <label class="checkbox-item">
+          <input type="checkbox" value="nist-ai-rmf" checked> NIST AI RMF 1.0
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="eu-ai-act" checked> EU AI Act
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="iso-42001"> ISO/IEC 42001
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="nyc-ll144"> NYC Local Law 144
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="nist-800-53"> NIST SP 800-53
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="gdpr"> GDPR
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="ccpa"> CCPA / CPRA
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="colorado"> Colorado AI Act
+        </label>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="section-label">05 — Additional Context</div>
+      <div class="field-grid single">
+        <div class="field">
+          <label>Known Risks or Concerns</label>
+          <textarea id="knownRisks" placeholder="Any known bias issues, security concerns, regulatory flags, or specific areas requiring attention..."></textarea>
+        </div>
+        <div class="field">
+          <label>Specific Requirements</label>
+          <textarea id="specificReqs" placeholder="Any organization-specific requirements, existing policies to reference, or special considerations..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <button class="generate-btn" onclick="generateSOP()">
+      ▶ GENERATE AUDIT-READY SOP
+    </button>
+
+  </div>
+
+  <div class="status" id="status">
+    <div class="spinner"></div>
+    <span id="statusText">Analyzing system parameters and generating SOP...</span>
+  </div>
+
+  <div class="error" id="error"></div>
+
+  <div class="output-section" id="outputSection">
+    <div class="output-header">
+      <div class="output-title">// Generated SOP Document</div>
+      <div class="output-actions">
+        <button class="action-btn" onclick="copyOutput()">Copy</button>
+        <button class="action-btn" onclick="downloadOutput()">Download .md</button>
+        <button class="action-btn" onclick="resetForm()">New SOP</button>
+      </div>
+    </div>
+    <div class="output-content" id="outputContent"></div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-left">AI SOP Agent // Built by Jake Kantor // AI GRC Practitioner</div>
+    <div class="footer-right">NIST AI RMF 1.0 | EU AI Act | ISO/IEC 42001</div>
+  </div>
+
+</div>
+
+<script>
+  let generatedText = '';
+
+  function getCheckedValues(name) {
+    return [...document.querySelectorAll(`input[type="checkbox"][value]:checked`)]
+      .map(cb => cb.value);
+  }
+
+  function getSopTypes() {
+    return [...document.querySelectorAll('.checkbox-grid:nth-of-type(1) input:checked')]
+      .map(cb => cb.value);
+  }
+
+  function buildPrompt() {
+    const systemName = document.getElementById('systemName').value;
+    const systemOwner = document.getElementById('systemOwner').value;
+    const useCase = document.getElementById('useCase').value;
+    const systemType = document.getElementById('systemType').value;
+    const systemDesc = document.getElementById('systemDesc').value;
+    const riskLevel = document.getElementById('riskLevel').value;
+    const deployContext = document.getElementById('deployContext').value;
+    const geoScope = document.getElementById('geoScope').value;
+    const knownRisks = document.getElementById('knownRisks').value;
+    const specificReqs = document.getElementById('specificReqs').value;
+
+    const sopTypes = [...document.querySelectorAll('.form-section:nth-child(3) input:checked')].map(cb => cb.value);
+    const frameworks = [...document.querySelectorAll('.form-section:nth-child(4) input:checked')].map(cb => cb.value);
+
+    return `You are an expert AI Governance, Risk, and Compliance practitioner with deep knowledge of NIST AI RMF 1.0, EU AI Act, ISO/IEC 42001, NYC Local Law 144, and related frameworks.
+
+Generate a comprehensive, professional, audit-ready Standard Operating Procedure (SOP) document for the following AI system:
+
+SYSTEM DETAILS:
+- System Name: ${systemName || 'AI System'}
+- System Owner: ${systemOwner || 'Organization'}
+- Use Case: ${useCase || 'Not specified'}
+- System Type: ${systemType || 'Not specified'}
+- Description: ${systemDesc || 'Not provided'}
+
+RISK CLASSIFICATION:
+- EU AI Act Risk Level: ${riskLevel || 'To be determined'}
+- Deployment Context: ${deployContext || 'General'}
+- Geographic Scope: ${geoScope || 'Not specified'}
+
+SOP TYPES REQUIRED: ${sopTypes.length > 0 ? sopTypes.join(', ') : 'Pre-deployment assessment'}
+
+COMPLIANCE FRAMEWORKS TO ADDRESS: ${frameworks.length > 0 ? frameworks.join(', ') : 'NIST AI RMF'}
+
+KNOWN RISKS: ${knownRisks || 'None specified'}
+
+SPECIFIC REQUIREMENTS: ${specificReqs || 'None specified'}
+
+Generate a complete, audit-ready SOP document that includes:
+
+1. Document header with metadata (version, owner, review date, classification)
+2. Purpose and scope
+3. Definitions of key terms
+4. Roles and responsibilities with RACI matrix
+5. Step-by-step procedures for each requested SOP type with:
+   - Numbered procedure steps
+   - Decision points and escalation criteria
+   - Required documentation and evidence
+   - Timeframes and cadence
+6. Compliance mapping table showing how each procedure satisfies specific framework requirements (cite specific articles, controls, or functions)
+7. Acceptance criteria and success metrics
+8. Review and update schedule
+9. Sign-off section
+10. Appendices with relevant checklists
+
+The document should be:
+- Immediately usable by a compliance team
+- Specific enough to guide actual implementation
+- Referenced to specific regulatory articles where applicable
+- Professional in tone and format
+- Formatted in clean markdown
+
+Generate the complete SOP now:`;
+  }
+
+  async function generateSOP() {
+    const systemName = document.getElementById('systemName').value.trim();
+    const useCase = document.getElementById('useCase').value.trim();
+
+    if (!systemName || !useCase) {
+      showError('System Name and Primary Use Case are required fields.');
+      return;
+    }
+
+    const btn = document.querySelector('.generate-btn');
+    const status = document.getElementById('status');
+    const statusText = document.getElementById('statusText');
+    const outputSection = document.getElementById('outputSection');
+    const outputContent = document.getElementById('outputContent');
+    const errorDiv = document.getElementById('error');
+
+    btn.disabled = true;
+    status.classList.add('active');
+    outputSection.classList.remove('active');
+    errorDiv.classList.remove('active');
+    generatedText = '';
+    outputContent.textContent = '';
+
+    const messages = [
+      'Analyzing system parameters...',
+      'Mapping compliance frameworks...',
+      'Generating procedure steps...',
+      'Adding regulatory citations...',
+      'Finalizing audit documentation...'
+    ];
+
+    let msgIdx = 0;
+    const msgInterval = setInterval(() => {
+      msgIdx = (msgIdx + 1) % messages.length;
+      statusText.textContent = messages[msgIdx];
+    }, 2000);
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 4000,
+          stream: true,
+          messages: [{ role: 'user', content: buildPrompt() }]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      clearInterval(msgInterval);
+      status.classList.remove('active');
+      outputSection.classList.add('active');
+
+      const cursor = document.createElement('span');
+      cursor.className = 'cursor';
+      outputContent.appendChild(cursor);
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') continue;
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+                generatedText += parsed.delta.text;
+                outputContent.textContent = generatedText;
+                outputContent.appendChild(cursor);
+                outputContent.scrollTop = outputContent.scrollHeight;
+              }
+            } catch (e) {}
+          }
+        }
+      }
+
+      cursor.remove();
+      outputContent.textContent = generatedText;
+
+    } catch (err) {
+      clearInterval(msgInterval);
+      status.classList.remove('active');
+      showError(`Generation failed: ${err.message}. Please check your connection and try again.`);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function showError(msg) {
+    const errorDiv = document.getElementById('error');
+    errorDiv.textContent = msg;
+    errorDiv.classList.add('active');
+  }
+
+  function copyOutput() {
+    navigator.clipboard.writeText(generatedText).then(() => {
+      const btn = event.target;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+
+  function downloadOutput() {
+    const systemName = document.getElementById('systemName').value || 'ai-system';
+    const filename = `SOP-${systemName.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.md`;
+    const blob = new Blob([generatedText], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function resetForm() {
+    document.getElementById('outputSection').classList.remove('active');
+    document.getElementById('error').classList.remove('active');
+    generatedText = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
